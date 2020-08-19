@@ -1,0 +1,152 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * @category    Katapult
+ * @package     Katapult_Payment
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <type name="Katapult\Payment\Logger\Handler">
+        <arguments>
+            <argument name="filesystem" xsi:type="object">Magento\Framework\Filesystem\Driver\File</argument>
+        </arguments>
+    </type>
+    <type name="Katapult\Payment\Logger\Logger">
+        <arguments>
+            <argument name="name" xsi:type="string">katapultLogger</argument>
+            <argument name="handlers" xsi:type="array">
+                <item name="system" xsi:type="object">Katapult\Payment\Logger\Handler</item>
+            </argument>
+        </arguments>
+    </type>
+    <!-- Payment Method Facade configuration -->
+    <virtualType name="KatapultPaymentFacade" type="Magento\Payment\Model\Method\Adapter">
+        <arguments>
+            <argument name="code" xsi:type="const">Katapult\Payment\Model\Ui\ConfigProvider::CODE</argument>
+            <argument name="formBlockType" xsi:type="string">Magento\Payment\Block\Form</argument>
+            <argument name="infoBlockType" xsi:type="string">Magento\Payment\Block\Info</argument>
+            <argument name="valueHandlerPool" xsi:type="object">KatapultPaymentValueHandlerPool</argument>
+            <argument name="commandPool" xsi:type="object">KatapultPaymentCommandPool</argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType name="KatapultPaymentCommandPool" type="Magento\Payment\Gateway\Command\CommandPool">
+        <arguments>
+            <argument name="commands" xsi:type="array">
+                <item name="authorize" xsi:type="string">KatapultPaymentAuthorizeCommand</item>
+                <item name="confirm" xsi:type="string">KatapultPaymentConfirmCommand</item>
+                <item name="capture" xsi:type="string">KatapultPaymentCaptureStrategyCommand</item>
+                <item name="refund" xsi:type="string">KatapultPaymentRefundCommand</item>
+                <item name="cancel" xsi:type="string">Katapult\Payment\Gateway\CancelCommand</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="KatapultPaymentCaptureStrategyCommand" type="Katapult\Payment\Gateway\Command\CaptureStrategyCommand">
+        <arguments>
+            <argument name="commandPool" xsi:type="object">KatapultPaymentCommandPool</argument>
+        </arguments>
+    </virtualType>
+
+    <!-- Authorize command -->
+    <virtualType name="KatapultPaymentAuthorizeCommand" type="Magento\Payment\Gateway\Command\GatewayCommand">
+        <arguments>
+            <argument name="requestBuilder" xsi:type="object">KatapultPaymentAuthorizationRequest</argument>
+            <argument name="handler" xsi:type="object">KatapultPaymentResponseHandlerComposite</argument>
+            <argument name="transferFactory" xsi:type="object">Katapult\Payment\Gateway\Http\TransferFactory</argument>
+            <argument name="client" xsi:type="object">Katapult\Payment\Gateway\Http\Client\TransactionConfirm</argument>
+        </arguments>
+    </virtualType>
+
+    <!-- Authorization Request -->
+    <virtualType name="KatapultPaymentAuthorizationRequest" type="Magento\Payment\Gateway\Request\BuilderComposite">
+        <arguments>
+            <argument name="builders" xsi:type="array">
+                <item name="transaction" xsi:type="string">Katapult\Payment\Gateway\Request\AuthorizationRequest</item>
+            </argument>
+        </arguments>
+    </virtualType>
+
+    <!-- Response handlers -->
+    <virtualType name="KatapultPaymentResponseHandlerComposite" type="Magento\Payment\Gateway\Response\HandlerChain">
+        <arguments>
+            <argument name="handlers" xsi:type="array">
+                <item name="handler" xsi:type="string">Katapult\Payment\Gateway\Response\ConfirmHandler</item>
+            </argument>
+        </arguments>
+    </virtualType>
+
+    <!-- Confirm Command -->
+    <virtualType name="KatapultPaymentConfirmCommand" type="Magento\Payment\Gateway\Command\GatewayCommand">
+        <arguments>
+            <argument name="client" xsi:type="object">Katapult\Payment\Gateway\Http\Client\TransactionConfirm</argument>
+            <argument name="requestBuilder" xsi:type="object">KatapultPaymentRefundBuilder</argument>
+            <argument name="transferFactory" xsi:type="object">Katapult\Payment\Gateway\Http\TransferFactory</argument>
+            <argument name="handler" xsi:type="object">Katapult\Payment\Gateway\Response\ConfirmHandler</argument>
+        </arguments>
+    </virtualType>
+    <!-- END Confirm Command -->
+
+    <!-- Refund Command -->
+    <virtualType name="KatapultPaymentRefundCommand" type="Magento\Payment\Gateway\Command\GatewayCommand">
+        <arguments>
+            <argument name="client" xsi:type="object">Katapult\Payment\Gateway\Http\Client\TransactionRefund</argument>
+            <argument name="requestBuilder" xsi:type="object">KatapultPaymentRefundBuilder</argument>
+            <argument name="handler" xsi:type="object">Katapult\Payment\Gateway\Response\RefundHandler</argument>
+            <argument name="transferFactory" xsi:type="object">Katapult\Payment\Gateway\Http\TransferFactory</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="KatapultPaymentRefundBuilder" type="Magento\Payment\Gateway\Request\BuilderComposite">
+        <arguments>
+            <argument name="builders" xsi:type="array">
+                <item name="order" xsi:type="string">Katapult\Payment\Gateway\Request\RefundDataBuilder</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <!-- END Refund Command -->
+
+    <!-- Cancel Command -->
+    <virtualType name="Katapult\Payment\Gateway\CancelCommand" type="KatapultPaymentRefundCommand">
+        <arguments>
+            <argument name="handler" xsi:type="object">Katapult\Payment\Gateway\Response\CancelDetailsHandler</argument>
+        </arguments>
+    </virtualType>
+    <!-- END Cancel Command -->
+
+    <!-- Configuration reader -->
+    <type name="Katapult\Payment\Gateway\Config\Config">
+        <arguments>
+            <argument name="methodCode" xsi:type="const">Katapult\Payment\Gateway\Config\Config::CODE</argument>
+        </arguments>
+    </type>
+
+    <!-- Value handlers infrastructure -->
+
+    <virtualType name="KatapultPaymentValueHandlerPool" type="Magento\Payment\Gateway\Config\ValueHandlerPool">
+        <arguments>
+            <argument name="handlers" xsi:type="array">
+                <item name="default" xsi:type="string">KatapultPaymentConfigValueHandler</item>
+                <item name="can_void" xsi:type="string">Katapult\Payment\Gateway\Config\CanVoidHandler</item>
+                <item name="can_cancel" xsi:type="string">Katapult\Payment\Gateway\Config\CanVoidHandler</item>
+                <item name="can_capture" xsi:type="string">Katapult\Payment\Gateway\Config\CanVoidHandler</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="KatapultPaymentConfigValueHandler" type="Magento\Payment\Gateway\Config\ConfigValueHandler">
+        <arguments>
+            <argument name="configInterface" xsi:type="object">Katapult\Payment\Gateway\Config\Config</argument>
+        </arguments>
+    </virtualType>
+
+    <!-- Proxy use list -->
+    <type name="Katapult\Payment\Observer\Savequoteid">
+        <arguments>
+            <argument name="katapultSession" xsi:type="object">Katapult\Payment\Model\Session\Proxy</argument>
+        </arguments>
+    </type>
+    <type name="Katapult\Payment\Model\Helper\Katapult">
+        <arguments>
+            <argument name="customerSession" xsi:type="object">Magento\Customer\Model\Session\Proxy</argument>
+            <argument name="session" xsi:type="object">Magento\Checkout\Model\Session\Proxy</argument>
+        </arguments>
+    </type>
+</config>

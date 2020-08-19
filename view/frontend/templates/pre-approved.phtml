@@ -1,0 +1,16 @@
+<?php
+/**
+ * @category    Katapult
+ * @package     Katapult_Payment
+ */
+
+/** @var \Katapult\Payment\Block\Jsplugin $block */
+if ($block->config->isEnable()): ?>
+    <div class="katapult-catalog-product-view-pre-approved">
+        <div class="katapult-product-detail-logo"></div>
+        <div class="katapult-product-detail-logo-text-right">
+            <?= /* @noEscape */ __('No credit? Shop now. Pay over time.') ?>
+            <a href="#" onclick="katapult.preapprove();"><?= /* @noEscape */ __('Get pre-approved') ?></a>
+        </div>
+    </div>
+<?php endif; ?>

@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * @category    Katapult
+ * @package     Katapult_Payment
+ */
+-->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <head>
+        <css src="Katapult_Payment::css/katapult.css"/>
+    </head>
+    <body>
+        <referenceContainer name="top.search">
+            <block class="Katapult\Payment\Block\Jsplugin" name="katapult.payment.header.pre.approval.button"
+                   template="Katapult_Payment::header.phtml" after="-"/>
+        </referenceContainer>
+        <referenceContainer name="before.body.end">
+            <block class="Katapult\Payment\Block\Jsplugin" name="katapult.payment.footer" template="Katapult_Payment::footer.phtml"
+                   after="-"/>
+        </referenceContainer>
+    </body>
+</page>

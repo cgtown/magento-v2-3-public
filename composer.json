@@ -1,0 +1,22 @@
+{
+    "name": "cognical/module-katapult-gateway-23",
+    "description": "Payment method Katapult Payment for Magento 2.3.x",
+    "require": {
+        "magento/module-payment": "100.3.*",
+        "magento/module-checkout": "100.3.*",
+        "magento/module-sales": "102.0.*"
+    },
+    "type": "magento2-module",
+    "license": [
+        "OSL-3.0",
+        "AFL-3.0"
+    ],
+    "autoload": {
+        "files": [
+            "registration.php"
+        ],
+        "psr-4": {
+            "Katapult\\Payment\\": ""
+        }
+    }
+}
