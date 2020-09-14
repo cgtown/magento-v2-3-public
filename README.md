@@ -3,7 +3,7 @@
 Katapult is a payment method that uses Katapult's JS plugin, as described here
 - https://cdn.katapult.com/developer/plugin.html
 
-Version for Magento 2.3.x
+Version for Magento 2.3.5
 
 ----
 
